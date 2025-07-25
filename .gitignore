@@ -143,6 +143,9 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# Ruff
+.ruff_cache/
+
 # Pyre type checker
 .pyre/
 
@@ -228,14 +231,19 @@ logs/*.log
 logs/*.txt
 !logs/.gitkeep
 
+# uv lock file (keep it for reproducible builds)
+# uv.lock should be committed
+
+# Development scripts (local development only)
+scripts/
+
 # Database
 *.db
 *.sqlite
 *.sqlite3
 
-# Alembic
-alembic/versions/*.py
-!alembic/versions/.gitkeep
+# Alembic - keep migration files but ignore __pycache__
+alembic/versions/__pycache__/
 
 # Backup files
 *.bak
@@ -262,4 +270,7 @@ cache/
 .pre-commit-config.yaml.bak
 
 # Kiro documents
-.kiro
+.kiro/
+
+# Development scripts
+scripts/

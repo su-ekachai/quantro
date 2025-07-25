@@ -2,11 +2,26 @@
 Quantro Trading Platform - Main FastAPI Application
 """
 
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import health
 from app.core.config import settings
+from app.core.database import close_database, init_database
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
+    """Application lifespan manager"""
+    # Startup
+    await init_database()
+    yield
+    # Shutdown
+    await close_database()
+
 
 # Create FastAPI application
 app = FastAPI(
@@ -15,6 +30,7 @@ app = FastAPI(
     version="0.1.0",
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,
+    lifespan=lifespan,
 )
 
 # Configure CORS

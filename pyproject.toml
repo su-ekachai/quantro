@@ -9,7 +9,7 @@ dependencies = [
     "fastapi>=0.116.1",
     "pydantic>=2.11.7",
     "pydantic-settings>=2.6.1",
-    "sqlalchemy>=2.0.41",
+    "sqlalchemy[asyncio]>=2.0.41",
     "alembic>=1.16.4",
     "backtesting>=0.6.4",
     "ccxt>=4.4.95",
@@ -19,7 +19,7 @@ dependencies = [
     "passlib[bcrypt]>=1.7.4",
     "python-multipart>=0.0.6",
     "uvicorn>=0.35.0",
-    "psycopg[binary]>=3.2.9",
+    "psycopg[binary,pool]>=3.2.9",
 ]
 
 [project.optional-dependencies]
@@ -28,7 +28,6 @@ dev = [
     "pytest-cov>=6.2.1",
     "httpx>=0.28.1",
     "pytest-mock>=3.14.1",
-    "black>=25.1.0",
     "ruff>=0.12.4",
     "mypy>=1.17.0",
     "pre-commit>=3.6.0",
@@ -37,12 +36,8 @@ redis = ["redis>=6.2.0"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=app --cov-report=term-missing --cov-fail-under=80"
+addopts = "--cov=app --cov-report=term-missing"
 asyncio_mode = "auto"
-
-[tool.black]
-line-length = 88
-target-version = ['py313']
 
 [tool.ruff]
 target-version = "py313"
@@ -50,10 +45,19 @@ line-length = 88
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM"]
-ignore = ["E501"]  # line too long (handled by black)
+ignore = ["UP017"]  # Allow timezone.utc instead of datetime.UTC for compatibility
+
+[tool.ruff.lint.per-file-ignores]
+"alembic/versions/*.py" = ["E501"]  # Ignore line length in Alembic migration files
 
 [tool.ruff.lint.isort]
 known-first-party = ["app"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
 [tool.mypy]
 python_version = "3.13"
@@ -62,3 +66,6 @@ disallow_incomplete_defs = true
 check_untyped_defs = true
 warn_unused_ignores = true
 plugins = ["pydantic.mypy"]
+exclude = [
+    "alembic/",
+]

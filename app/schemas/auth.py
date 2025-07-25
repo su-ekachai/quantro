@@ -1,0 +1,81 @@
+"""
+Authentication and user-related Pydantic schemas
+"""
+
+from __future__ import annotations
+
+from datetime import datetime
+
+from pydantic import BaseModel, EmailStr, Field
+
+
+class UserBase(BaseModel):
+    """Base user schema with common fields"""
+
+    username: str = Field(..., min_length=3, max_length=50)
+    email: EmailStr
+    full_name: str | None = Field(None, max_length=255)
+    preferred_language: str = Field("en", max_length=5)
+    theme: str = Field("light", max_length=10)
+    timezone: str = Field("UTC", max_length=50)
+
+
+class UserCreate(UserBase):
+    """Schema for user creation"""
+
+    password: str = Field(..., min_length=8, max_length=100)
+
+
+class UserUpdate(BaseModel):
+    """Schema for user updates"""
+
+    full_name: str | None = Field(None, max_length=255)
+    preferred_language: str | None = Field(None, max_length=5)
+    theme: str | None = Field(None, max_length=10)
+    timezone: str | None = Field(None, max_length=50)
+    notification_settings: dict | None = None
+
+
+class UserInDB(UserBase):
+    """Schema for user data stored in database"""
+
+    id: int
+    hashed_password: str
+    is_active: bool
+    is_verified: bool
+    notification_settings: dict | None = None
+    created_at: datetime
+    updated_at: datetime
+    last_login: datetime | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class UserResponse(UserBase):
+    """Schema for user data in API responses"""
+
+    id: int
+    is_active: bool
+    is_verified: bool
+    created_at: datetime
+    updated_at: datetime
+    last_login: datetime | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class Token(BaseModel):
+    """JWT token response schema"""
+
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int
+
+
+class TokenData(BaseModel):
+    """Token payload data schema"""
+
+    username: str | None = None
+    user_id: int | None = None

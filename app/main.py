@@ -8,9 +8,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health
+from app.api import auth, health
 from app.core.config import settings
 from app.core.database import close_database, init_database
+from app.core.middleware import SecurityMiddleware
 
 
 @asynccontextmanager
@@ -33,6 +34,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Add security middleware
+app.add_middleware(SecurityMiddleware)
+
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
@@ -44,6 +48,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(health.router, prefix="/api/v1", tags=["health"])
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 
 
 @app.get("/")

@@ -15,11 +15,12 @@ dependencies = [
     "ccxt>=4.4.95",
     "pytest>=8.4.1",
     "loguru>=0.7.3",
-    "pyjwt[cryptography]>=2.10.1",
+    "pyjwt>=2.10.1",
     "passlib[bcrypt]>=1.7.4",
     "python-multipart>=0.0.6",
     "uvicorn>=0.35.0",
     "psycopg[binary,pool]>=3.2.9",
+    "email-validator>=2.2.0",
 ]
 
 [project.optional-dependencies]
@@ -31,6 +32,7 @@ dev = [
     "ruff>=0.12.4",
     "mypy>=1.17.0",
     "pre-commit>=3.6.0",
+    "types-passlib>=1.7.7.20250602",
 ]
 redis = ["redis>=6.2.0"]
 
@@ -45,7 +47,10 @@ line-length = 88
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM"]
-ignore = ["UP017"]  # Allow timezone.utc instead of datetime.UTC for compatibility
+ignore = [
+    "UP017",  # Allow timezone.utc instead of datetime.UTC for compatibility
+    "B008",   # Allow function calls in argument defaults for FastAPI Depends()
+]
 
 [tool.ruff.lint.per-file-ignores]
 "alembic/versions/*.py" = ["E501"]  # Ignore line length in Alembic migration files

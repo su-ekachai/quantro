@@ -7,7 +7,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, String, Text
+from sqlalchemy import Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -40,6 +40,11 @@ class User(Base):
     # Notification preferences
     notification_settings: Mapped[str | None] = mapped_column(Text)  # JSON string
 
+    # Security fields
+    failed_login_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_failed_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
@@ -59,3 +64,26 @@ class User(Base):
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, username='{self.username}')>"
+
+
+class LoginAttempt(Base):
+    """Model for tracking login attempts for security monitoring"""
+
+    __tablename__ = "login_attempts"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    ip_address_hash: Mapped[str] = mapped_column(String(64), index=True)  # Hashed IP
+    username: Mapped[str | None] = mapped_column(String(50), index=True)
+    user_id: Mapped[int | None] = mapped_column(Integer, index=True)
+    success: Mapped[bool] = mapped_column(Boolean, default=False)
+    failure_reason: Mapped[str | None] = mapped_column(String(100))
+    user_agent: Mapped[str | None] = mapped_column(String(500))
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), index=True
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<LoginAttempt(id={self.id}, username='{self.username}', "
+            f"success={self.success})>"
+        )

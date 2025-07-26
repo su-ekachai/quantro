@@ -41,8 +41,7 @@ class PortfolioResponse(PortfolioBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class StrategyBase(BaseModel):
@@ -75,8 +74,7 @@ class StrategyResponse(StrategyBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class PositionResponse(BaseModel):
@@ -98,8 +96,7 @@ class PositionResponse(BaseModel):
     closed_at: datetime | None = None
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class TradeResponse(BaseModel):
@@ -121,8 +118,7 @@ class TradeResponse(BaseModel):
     executed_at: datetime
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class TradingSignalResponse(BaseModel):
@@ -145,5 +141,4 @@ class TradingSignalResponse(BaseModel):
     expires_at: datetime | None = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}

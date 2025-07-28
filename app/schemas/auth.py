@@ -106,15 +106,8 @@ class TokenData(BaseModel):
 class LoginRequest(SecureBaseModel):
     """Login request schema with validation"""
 
-    username: str = Field(..., min_length=3, max_length=50)
+    email: EmailStr
     password: str = Field(..., min_length=1, max_length=128)
-
-    @field_validator("username")
-    @classmethod
-    def validate_username_format(cls, v: str) -> str:
-        if not InputSanitizer.validate_username(v):
-            raise ValueError("Invalid username format")
-        return v
 
 
 class LoginResponse(BaseModel):

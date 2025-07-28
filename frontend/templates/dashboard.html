@@ -1,0 +1,459 @@
+{% extends "base.html" %} {% block title %}Dashboard - Quantro{% endblock %} {%
+block content %}
+<!-- Authentication Guard -->
+<div x-data="authGuard">
+  <!-- Dashboard Header -->
+  <header class="dashboard-header">
+    <nav class="dashboard-nav" x-data="navigation">
+      <!-- Logo and Title -->
+      <div class="flex items-center">
+        <h1 class="dashboard-title">
+          <span x-cloak x-text="$store.i18n.t('quantro_title')">Quantro</span>
+          <span
+            class="text-sm font-normal text-secondary ml-2"
+            x-cloak
+            x-text="$store.i18n.t('quantro_subtitle')"
+            >Trading Platform</span
+          >
+        </h1>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <div class="desktop-only">
+        <div class="flex items-center justify-center">
+          <a
+            href="/dashboard"
+            class="nav-item active"
+            x-text="$store.i18n.t('dashboard')"
+            >Dashboard</a
+          >
+          <a
+            href="/portfolio"
+            class="nav-item"
+            x-text="$store.i18n.t('portfolio')"
+            >Portfolio</a
+          >
+          <a href="/signals" class="nav-item" x-text="$store.i18n.t('signals')"
+            >Signals</a
+          >
+          <a
+            href="/strategies"
+            class="nav-item"
+            x-text="$store.i18n.t('strategies')"
+            >Strategies</a
+          >
+          <a
+            href="/backtest"
+            class="nav-item"
+            x-text="$store.i18n.t('backtest')"
+            >Backtest</a
+          >
+        </div>
+      </div>
+
+      <!-- Dashboard Actions -->
+      <div class="dashboard-actions">
+        <!-- Theme Toggle -->
+        <div x-data="themeToggle">
+          <button
+            @click="toggle"
+            :class="{ 'dark': isDark }"
+            class="theme-toggle"
+            title="Toggle theme"
+          ></button>
+        </div>
+
+        <!-- Language Switcher -->
+        <div x-data="languageSwitcher" 
+             x-init="$nextTick(() => console.log('Language switcher initialized'))"
+             class="language-switcher">
+          <button
+            @click="toggle"
+            class="language-switcher-button"
+            :disabled="loading"
+            :title="$store.i18n.t('switch_language')"
+          >
+            <span x-show="!loading" class="flex items-center gap-1">
+              <span class="text-xs">🌐</span>
+              <span x-text="displayText"></span>
+            </span>
+            <div x-show="loading" class="spinner"></div>
+          </button>
+
+          <div
+            x-show="open"
+            x-transition:enter="transition ease-out duration-100"
+            x-transition:enter-start="transform opacity-0 scale-95"
+            x-transition:enter-end="transform opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-75"
+            x-transition:leave-start="transform opacity-100 scale-100"
+            x-transition:leave-end="transform opacity-0 scale-95"
+            @click.outside="close"
+            class="language-switcher-dropdown"
+          >
+            <button
+              @click="switchLanguage('en')"
+              :class="{ 'active': currentLang === 'en' }"
+              class="language-switcher-item"
+            >
+              🇺🇸 English
+            </button>
+            <button
+              @click="switchLanguage('th')"
+              :class="{ 'active': currentLang === 'th' }"
+              class="language-switcher-item"
+            >
+              🇹🇭 ไทย
+            </button>
+          </div>
+        </div>
+
+        <!-- User Menu -->
+        <div class="relative" x-data="dropdown">
+          <button
+            @click="toggle"
+            class="btn btn-ghost flex items-center space-x-2"
+          >
+            <div
+              class="w-8 h-8 bg-accent-primary rounded-full flex items-center justify-center text-white text-sm font-semibold"
+            >
+              <span
+                x-text="($store.auth.user?.email || 'U').charAt(0).toUpperCase()"
+              ></span>
+            </div>
+            <span
+              x-text="$store.auth.user?.email || 'User'"
+              class="desktop-only"
+            ></span>
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              ></path>
+            </svg>
+          </button>
+
+          <div
+            x-show="open"
+            x-transition:enter="transition ease-out duration-100"
+            x-transition:enter-start="transform opacity-0 scale-95"
+            x-transition:enter-end="transform opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-75"
+            x-transition:leave-start="transform opacity-100 scale-100"
+            x-transition:leave-end="transform opacity-0 scale-95"
+            class="absolute right-0 mt-2 w-48 bg-primary border border-color rounded-md shadow-lg z-10"
+          >
+            <div class="py-1">
+              <a
+                href="/profile"
+                class="block px-4 py-2 text-sm hover:bg-secondary"
+                x-text="$store.i18n.t('profile')"
+                >Profile</a
+              >
+              <a
+                href="/settings"
+                class="block px-4 py-2 text-sm hover:bg-secondary"
+                x-text="$store.i18n.t('settings')"
+                >Settings</a
+              >
+              <hr class="my-1 border-color" />
+              <button
+                @click="logout(); close()"
+                class="block w-full text-left px-4 py-2 text-sm hover:bg-secondary"
+                x-text="$store.i18n.t('logout')"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <button @click="toggleMobileMenu" 
+                @keyup.escape.window="closeMobileMenu"
+                class="mobile-only btn btn-ghost"
+                :aria-expanded="mobileMenuOpen"
+                aria-label="Toggle mobile menu">
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              x-show="!mobileMenuOpen"
+              x-transition:enter="transition ease-out duration-150"
+              x-transition:enter-start="opacity-0 rotate-90"
+              x-transition:enter-end="opacity-100 rotate-0"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            ></path>
+            <path
+              x-show="mobileMenuOpen"
+              x-transition:enter="transition ease-out duration-150"
+              x-transition:enter-start="opacity-0 rotate-90"
+              x-transition:enter-end="opacity-100 rotate-0"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile Navigation Menu -->
+      <div
+        x-show="mobileMenuOpen"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 transform scale-95"
+        x-transition:enter-end="opacity-100 transform scale-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 transform scale-100"
+        x-transition:leave-end="opacity-0 transform scale-95"
+        @click.outside="closeMobileMenu"
+        @keyup.escape.window="closeMobileMenu"
+        class="mobile-only absolute top-full left-0 right-0 bg-primary border-t border-color shadow-lg z-20"
+      >
+        <div class="py-2">
+          <a
+            href="/dashboard"
+            @click="closeMobileMenu"
+            class="block px-4 py-3 hover:bg-secondary"
+            x-text="$store.i18n.t('dashboard')"
+            >Dashboard</a
+          >
+          <a
+            href="/portfolio"
+            @click="closeMobileMenu"
+            class="block px-4 py-3 hover:bg-secondary"
+            x-text="$store.i18n.t('portfolio')"
+            >Portfolio</a
+          >
+          <a
+            href="/signals"
+            @click="closeMobileMenu"
+            class="block px-4 py-3 hover:bg-secondary"
+            x-text="$store.i18n.t('signals')"
+            >Signals</a
+          >
+          <a
+            href="/strategies"
+            @click="closeMobileMenu"
+            class="block px-4 py-3 hover:bg-secondary"
+            x-text="$store.i18n.t('strategies')"
+            >Strategies</a
+          >
+          <a
+            href="/backtest"
+            @click="closeMobileMenu"
+            class="block px-4 py-3 hover:bg-secondary"
+            x-text="$store.i18n.t('backtest')"
+            >Backtest</a
+          >
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Dashboard Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Welcome Section -->
+    <div class="mb-8">
+      <h2 class="text-2xl font-bold text-primary mb-2">
+        <span x-text="$store.i18n.t('welcome_back')">Welcome back</span>,
+        <span x-text="$store.auth.user?.email || 'User'"></span>!
+      </h2>
+      <p class="text-secondary">
+        <span x-text="$store.i18n.t('dashboard')">Dashboard</span> -
+        <span
+          x-text="new Date().toLocaleDateString($store.i18n.currentLang === 'th' ? 'th-TH' : 'en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                })"
+        ></span>
+      </p>
+    </div>
+
+    <!-- Dashboard Grid -->
+    <div class="trading-grid mb-8">
+      <!-- Portfolio Summary Card -->
+      <div class="card">
+        <div class="card-body">
+          <h3
+            class="text-lg font-semibold text-primary mb-4"
+            x-text="$store.i18n.t('portfolio')"
+          >
+            Portfolio
+          </h3>
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <span
+                class="text-secondary"
+                x-text="$store.i18n.t('total_return')"
+                >Total Return</span
+              >
+              <span class="font-semibold text-success-color">+$12,345.67</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-secondary" x-text="$store.i18n.t('daily_pnl')"
+                >Daily P&L</span
+              >
+              <span class="font-semibold text-success-color">+$234.56</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-secondary" x-text="$store.i18n.t('positions')"
+                >Positions</span
+              >
+              <span class="font-semibold text-primary">8</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Signals Card -->
+      <div class="card">
+        <div class="card-body">
+          <h3
+            class="text-lg font-semibold text-primary mb-4"
+            x-text="$store.i18n.t('signals')"
+          >
+            Signals
+          </h3>
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <div>
+                <div class="font-medium text-primary">BTC/USD</div>
+                <div class="text-sm text-secondary">CDC Action Zone</div>
+              </div>
+              <span
+                class="status-indicator status-success"
+                x-text="$store.i18n.t('buy')"
+                >Buy</span
+              >
+            </div>
+            <div class="flex justify-between items-center">
+              <div>
+                <div class="font-medium text-primary">ETH/USD</div>
+                <div class="text-sm text-secondary">CDC Action Zone</div>
+              </div>
+              <span
+                class="status-indicator status-warning"
+                x-text="$store.i18n.t('hold')"
+                >Hold</span
+              >
+            </div>
+            <div class="flex justify-between items-center">
+              <div>
+                <div class="font-medium text-primary">AAPL</div>
+                <div class="text-sm text-secondary">CDC Action Zone</div>
+              </div>
+              <span
+                class="status-indicator status-error"
+                x-text="$store.i18n.t('sell')"
+                >Sell</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Market Overview Card -->
+      <div class="card">
+        <div class="card-body">
+          <h3 class="text-lg font-semibold text-primary mb-4">
+            Market Overview
+          </h3>
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-secondary">BTC/USD</span>
+              <div class="text-right">
+                <div class="font-semibold text-primary">$43,250.00</div>
+                <div class="text-sm text-success-color">+2.34%</div>
+              </div>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-secondary">ETH/USD</span>
+              <div class="text-right">
+                <div class="font-semibold text-primary">$2,650.00</div>
+                <div class="text-sm text-error-color">-1.23%</div>
+              </div>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-secondary">SET Index</span>
+              <div class="text-right">
+                <div class="font-semibold text-primary">1,456.78</div>
+                <div class="text-sm text-success-color">+0.89%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Status Card -->
+      <div class="card">
+        <div class="card-body">
+          <h3 class="text-lg font-semibold text-primary mb-4">System Status</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-secondary">Data Feed</span>
+              <span class="status-indicator status-success">Online</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-secondary">Strategies</span>
+              <span class="status-indicator status-success">Running</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-secondary">Last Update</span>
+              <span class="text-sm text-secondary">2 min ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+      <div class="card-body">
+        <h3 class="text-lg font-semibold text-primary mb-4">Quick Actions</h3>
+        <div class="flex flex-wrap gap-4">
+          <a href="/backtest" class="btn btn-primary">
+            <span x-text="$store.i18n.t('backtest')">Run Backtest</span>
+          </a>
+          <a href="/signals" class="btn btn-secondary">
+            <span x-text="$store.i18n.t('signals')">View Signals</span>
+          </a>
+          <a href="/portfolio" class="btn btn-secondary">
+            <span x-text="$store.i18n.t('portfolio')">Portfolio</span>
+          </a>
+          <a href="/settings" class="btn btn-ghost">
+            <span x-text="$store.i18n.t('settings')">Settings</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  // Initialize dashboard data refresh
+  document.addEventListener("DOMContentLoaded", () => {
+    // Auto-refresh data every 30 seconds
+    setInterval(() => {
+      // Refresh market data, signals, etc.
+      console.log("Refreshing dashboard data...");
+    }, 30000);
+  });
+</script>
+{% endblock %}

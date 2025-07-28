@@ -7,7 +7,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -74,7 +74,7 @@ class LoginAttempt(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     ip_address_hash: Mapped[str] = mapped_column(String(64), index=True)  # Hashed IP
     username: Mapped[str | None] = mapped_column(String(50), index=True)
-    user_id: Mapped[int | None] = mapped_column(Integer, index=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), index=True)
     success: Mapped[bool] = mapped_column(Boolean, default=False)
     failure_reason: Mapped[str | None] = mapped_column(String(100))
     user_agent: Mapped[str | None] = mapped_column(String(500))

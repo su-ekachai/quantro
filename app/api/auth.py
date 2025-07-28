@@ -76,7 +76,7 @@ async def login(
             "Login attempt from locked IP",
             extra={
                 "ip_hash": hashed_ip,
-                "username": login_data.username,
+                "email": login_data.email,
                 "remaining_lockout": remaining_time,
             },
         )
@@ -87,9 +87,26 @@ async def login(
 
     # Get user from database
     result = await db.execute(
-        select(User).where(User.username == login_data.username, User.is_active)
+        select(User).where(User.email == login_data.email, User.is_active)
     )
     user = result.scalar_one_or_none()
+
+    # Access all user attributes immediately while session is active (to avoid lazy loading issues)
+    user_data = None
+    if user:
+        user_data = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "full_name": user.full_name,
+            "preferred_language": user.preferred_language,
+            "theme": user.theme,
+            "timezone": user.timezone,
+            "is_active": user.is_active,
+            "is_verified": user.is_verified,
+            "created_at": user.created_at,
+            "updated_at": user.updated_at,
+        }
 
     # Check if user exists and password is correct
     if not user or not security_manager.verify_password(
@@ -99,7 +116,7 @@ async def login(
         await _record_login_attempt(
             db=db,
             ip_hash=hashed_ip,
-            username=login_data.username,
+            username=login_data.email,
             user_id=user.id if user else None,
             success=False,
             failure_reason="invalid_credentials",
@@ -117,7 +134,7 @@ async def login(
             "Failed login attempt",
             extra={
                 "ip_hash": hashed_ip,
-                "username": login_data.username,
+                "email": login_data.email,
                 "reason": "invalid_credentials",
             },
         )
@@ -134,7 +151,7 @@ async def login(
             "Login attempt for locked user account",
             extra={
                 "ip_hash": hashed_ip,
-                "username": login_data.username,
+                "email": login_data.email,
                 "user_id": user.id,
                 "remaining_lockout": remaining_time,
             },
@@ -158,11 +175,13 @@ async def login(
         update(User).where(User.id == user.id).values(last_login=datetime.utcnow())
     )
 
+
+
     # Record successful attempt
     await _record_login_attempt(
         db=db,
         ip_hash=hashed_ip,
-        username=login_data.username,
+        username=login_data.email,
         user_id=user.id,
         success=True,
         user_agent=user_agent,
@@ -174,7 +193,7 @@ async def login(
         "Successful login",
         extra={
             "ip_hash": hashed_ip,
-            "username": login_data.username,
+            "email": login_data.email,
             "user_id": user.id,
         },
     )
@@ -182,7 +201,7 @@ async def login(
     return LoginResponse(
         access_token=access_token,
         expires_in=security_manager.expire_minutes * 60,
-        user=UserResponse.model_validate(user),
+        user=UserResponse(**user_data),
     )
 
 

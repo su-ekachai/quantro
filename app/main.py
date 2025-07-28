@@ -5,8 +5,11 @@ Quantro Trading Platform - Main FastAPI Application
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 from app.api import auth, health
 from app.core.config import settings
@@ -46,14 +49,40 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files
+app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+
+# Setup templates
+templates = Jinja2Templates(directory="frontend/templates")
+
 # Include routers
 app.include_router(health.router, prefix="/api/v1", tags=["health"])
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 
 
-@app.get("/")
-async def root() -> dict[str, str]:
-    """Root endpoint"""
+# Frontend routes
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request) -> HTMLResponse:
+    """Root endpoint - redirect to dashboard or login"""
+    return templates.TemplateResponse(request, "dashboard.html")
+
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request) -> HTMLResponse:
+    """Login page"""
+    return templates.TemplateResponse(request, "login.html")
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard_page(request: Request) -> HTMLResponse:
+    """Dashboard page"""
+    return templates.TemplateResponse(request, "dashboard.html")
+
+
+# API root endpoint
+@app.get("/api")
+async def api_root() -> dict[str, str]:
+    """API root endpoint"""
     return {"message": "Quantro Trading Platform API", "version": "0.1.0"}
 
 

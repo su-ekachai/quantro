@@ -28,8 +28,8 @@ def test_ping_endpoint() -> None:
 
 
 def test_root_endpoint() -> None:
-    """Test root endpoint"""
-    response = client.get("/")
+    """Test API root endpoint"""
+    response = client.get("/api")
     assert response.status_code == 200
     data = response.json()
     assert "Quantro Trading Platform API" in data["message"]

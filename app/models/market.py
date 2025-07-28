@@ -9,6 +9,7 @@ from decimal import Decimal
 
 from sqlalchemy import (
     DateTime,
+    ForeignKey,
     Index,
     Numeric,
     String,
@@ -65,7 +66,7 @@ class MarketData(Base):
     __tablename__ = "market_data"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    symbol_id: Mapped[int] = mapped_column(index=True)
+    symbol_id: Mapped[int] = mapped_column(ForeignKey("symbols.id"), index=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     timeframe: Mapped[str] = mapped_column(String(10), index=True)  # 1m, 5m, 1h, 1d
 

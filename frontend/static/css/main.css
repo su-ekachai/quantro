@@ -17,12 +17,12 @@
   --error-color: #e53e3e;
   --warning-color: #d69e2e;
   --info-color: #3182ce;
-  
+
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  
+
   /* Transitions */
   --transition-fast: 150ms ease-in-out;
   --transition-normal: 300ms ease-in-out;
@@ -45,7 +45,7 @@
   --error-color: #f56565;
   --warning-color: #ed8936;
   --info-color: #63b3ed;
-  
+
   /* Dark theme shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
@@ -272,7 +272,7 @@ body {
   .mobile-only {
     display: none;
   }
-  
+
   .desktop-only {
     display: block;
   }
@@ -283,30 +283,30 @@ body {
   .dashboard-title {
     font-size: 1.25rem;
   }
-  
+
   .dashboard-title .text-sm {
     font-size: 0.75rem;
   }
-  
+
   .nav-item {
     padding: 0.5rem 0.5rem;
     font-size: 0.8125rem;
     margin: 0 0.0625rem;
   }
-  
+
   .dashboard-actions {
     gap: 0.5rem;
   }
-  
+
   .dashboard-actions .btn {
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
   }
-  
+
   .dashboard-actions .desktop-only span {
     display: none;
   }
-  
+
   .dashboard-nav {
     gap: 0.5rem;
   }
@@ -317,16 +317,16 @@ body {
   .dashboard-nav {
     padding: 0 0.75rem;
   }
-  
+
   .dashboard-title {
     font-size: 1.375rem;
   }
-  
+
   .nav-item {
     padding: 0.5rem 0.625rem;
     font-size: 0.875rem;
   }
-  
+
   .dashboard-actions .desktop-only span {
     display: inline;
     font-size: 0.875rem;
@@ -342,17 +342,17 @@ body {
   .dashboard-title .text-sm {
     display: none;
   }
-  
+
   .nav-item {
     padding: 0.375rem 0.5rem;
     font-size: 0.8125rem;
     margin: 0;
   }
-  
+
   .dashboard-actions .btn {
     padding: 0.375rem 0.5rem;
   }
-  
+
   .dashboard-actions .desktop-only span {
     display: none;
   }
@@ -568,7 +568,7 @@ body {
     --border-color: #000000;
     --text-secondary: #000000;
   }
-  
+
   .dark {
     --border-color: #ffffff;
     --text-secondary: #ffffff;
@@ -661,7 +661,7 @@ body {
     font-size: 0.8125rem;
     min-width: 3rem;
   }
-  
+
   .language-switcher-dropdown {
     min-width: 7rem;
   }

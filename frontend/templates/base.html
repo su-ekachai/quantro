@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Quantro Trading Platform{% endblock %}</title>
-    
+
     <!-- Tailwind CSS v4 Browser CDN (Development Only) -->
     <!-- Note: For production, use Tailwind CLI or PostCSS plugin -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -20,31 +20,31 @@
             };
         }
     </script>
-    
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/static/css/main.css">
-    
+
     <!-- Prevent Alpine.js flash -->
     <style>
         [x-cloak] { display: none !important; }
     </style>
-    
+
     <!-- Alpine.js Stores and Components (must load before Alpine.js) -->
     <script src="/static/js/stores.js"></script>
     <script src="/static/js/components.js"></script>
-    
+
     <!-- Alpine.js CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
-    
+
     <!-- Security headers are set via HTTP headers in middleware -->
-    
+
     {% block head %}{% endblock %}
 </head>
 <body class="bg-primary text-primary min-h-screen transition-colors duration-300">
     <!-- Toast Notifications -->
     <div x-data="toastManager" class="fixed top-4 right-4 z-50 space-y-2">
         <template x-for="toast in toasts" :key="toast.id">
-            <div 
+            <div
                 x-show="toast.visible"
                 x-transition:enter="transform ease-out duration-300 transition"
                 x-transition:enter-start="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
@@ -84,7 +84,7 @@
                             <p class="text-sm font-medium text-white" x-text="toast.message"></p>
                         </div>
                         <div class="ml-4 flex-shrink-0 flex">
-                            <button @click="remove(toast.id)" 
+                            <button @click="remove(toast.id)"
                                     @keyup.escape.window="remove(toast.id)"
                                     class="rounded-md inline-flex text-white hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-white"
                                     aria-label="Close notification">
@@ -109,12 +109,12 @@
         document.addEventListener('alpine:init', () => {
             // Initialize theme on page load
             Alpine.store('theme').init();
-            
+
             // Initialize i18n
             Alpine.store('i18n').init();
         });
     </script>
-    
+
     {% block scripts %}{% endblock %}
 </body>
 </html>

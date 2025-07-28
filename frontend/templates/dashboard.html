@@ -64,7 +64,7 @@ block content %}
         </div>
 
         <!-- Language Switcher -->
-        <div x-data="languageSwitcher" 
+        <div x-data="languageSwitcher"
              x-init="$nextTick(() => console.log('Language switcher initialized'))"
              class="language-switcher">
           <button
@@ -176,7 +176,7 @@ block content %}
         </div>
 
         <!-- Mobile Menu Toggle -->
-        <button @click="toggleMobileMenu" 
+        <button @click="toggleMobileMenu"
                 @keyup.escape.window="closeMobileMenu"
                 class="mobile-only btn btn-ghost"
                 :aria-expanded="mobileMenuOpen"
@@ -276,11 +276,11 @@ block content %}
       <p class="text-secondary">
         <span x-text="$store.i18n.t('dashboard')">Dashboard</span> -
         <span
-          x-text="new Date().toLocaleDateString($store.i18n.currentLang === 'th' ? 'th-TH' : 'en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
+          x-text="new Date().toLocaleDateString($store.i18n.currentLang === 'th' ? 'th-TH' : 'en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
                 })"
         ></span>
       </p>

@@ -7,9 +7,9 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
 
 from app.api import auth, health
 from app.core.config import settings
@@ -62,19 +62,19 @@ app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 
 # Frontend routes
 @app.get("/", response_class=HTMLResponse)
-async def root(request: Request):
+async def root(request: Request) -> HTMLResponse:
     """Root endpoint - redirect to dashboard or login"""
     return templates.TemplateResponse(request, "dashboard.html")
 
 
 @app.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request):
+async def login_page(request: Request) -> HTMLResponse:
     """Login page"""
     return templates.TemplateResponse(request, "login.html")
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
-async def dashboard_page(request: Request):
+async def dashboard_page(request: Request) -> HTMLResponse:
     """Dashboard page"""
     return templates.TemplateResponse(request, "dashboard.html")
 

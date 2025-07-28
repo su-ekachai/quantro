@@ -91,7 +91,8 @@ async def login(
     )
     user = result.scalar_one_or_none()
 
-    # Access all user attributes immediately while session is active (to avoid lazy loading issues)
+    # Access all user attributes immediately while session is active
+    # (to avoid lazy loading issues)
     user_data = None
     if user:
         user_data = {
@@ -175,8 +176,6 @@ async def login(
         update(User).where(User.id == user.id).values(last_login=datetime.utcnow())
     )
 
-
-
     # Record successful attempt
     await _record_login_attempt(
         db=db,
@@ -197,6 +196,9 @@ async def login(
             "user_id": user.id,
         },
     )
+
+    if user_data is None:
+        raise HTTPException(status_code=500, detail="Failed to retrieve user data")
 
     return LoginResponse(
         access_token=access_token,

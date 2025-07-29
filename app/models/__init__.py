@@ -2,23 +2,23 @@
 Database models package
 """
 
-from app.models.market import MarketData, Symbol
+from app.models.market import Asset, MarketData
 from app.models.trading import (
     Portfolio,
     Position,
+    Signal,
     Strategy,
     Trade,
-    TradingSignal,
 )
 from app.models.user import User
 
 __all__ = [
     "User",
+    "Asset",
     "MarketData",
-    "Symbol",
     "Portfolio",
     "Position",
     "Strategy",
     "Trade",
-    "TradingSignal",
+    "Signal",
 ]

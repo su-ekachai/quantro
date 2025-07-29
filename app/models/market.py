@@ -21,10 +21,10 @@ from sqlalchemy.sql import func
 from app.core.database import Base
 
 
-class Symbol(Base):
-    """Symbol/instrument definition"""
+class Asset(Base):
+    """Asset/instrument definition for crypto, Thai stocks, and commodities"""
 
-    __tablename__ = "symbols"
+    __tablename__ = "assets"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     symbol: Mapped[str] = mapped_column(String(20), unique=True, index=True)
@@ -53,11 +53,14 @@ class Symbol(Base):
 
     # Relationships
     market_data: Mapped[list[MarketData]] = relationship(
-        "MarketData", back_populates="symbol", cascade="all, delete-orphan"
+        "MarketData", back_populates="asset", cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:
-        return f"<Symbol(id={self.id}, symbol='{self.symbol}')>"
+        return (
+            f"<Asset(id={self.id}, symbol='{self.symbol}', "
+            f"asset_class='{self.asset_class}')>"
+        )
 
 
 class MarketData(Base):
@@ -66,7 +69,7 @@ class MarketData(Base):
     __tablename__ = "market_data"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    symbol_id: Mapped[int] = mapped_column(ForeignKey("symbols.id"), index=True)
+    asset_id: Mapped[int] = mapped_column(ForeignKey("assets.id"), index=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     timeframe: Mapped[str] = mapped_column(String(10), index=True)  # 1m, 5m, 1h, 1d
 
@@ -92,17 +95,19 @@ class MarketData(Base):
     )
 
     # Relationships
-    symbol: Mapped[Symbol] = relationship("Symbol", back_populates="market_data")
+    asset: Mapped[Asset] = relationship("Asset", back_populates="market_data")
 
-    # Constraints
+    # Constraints and indexes for optimal query performance
     __table_args__ = (
-        UniqueConstraint("symbol_id", "timestamp", "timeframe", name="uq_market_data"),
-        Index("idx_market_data_symbol_time", "symbol_id", "timestamp"),
+        UniqueConstraint("asset_id", "timestamp", "timeframe", name="uq_market_data"),
+        Index("idx_market_data_asset_time", "asset_id", "timestamp"),
         Index("idx_market_data_timeframe", "timeframe"),
+        Index("idx_market_data_timestamp_desc", "timestamp", postgresql_using="btree"),
+        Index("idx_market_data_asset_timeframe", "asset_id", "timeframe"),
     )
 
     def __repr__(self) -> str:
         return (
-            f"<MarketData(symbol_id={self.symbol_id}, "
+            f"<MarketData(asset_id={self.asset_id}, "
             f"timestamp={self.timestamp}, timeframe='{self.timeframe}')>"
         )

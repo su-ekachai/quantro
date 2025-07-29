@@ -164,6 +164,15 @@ async def get_db_session() -> AsyncGenerator[AsyncSession]:
 async def init_database() -> None:
     """Initialize database on application startup"""
     db_manager.initialize()
+
+    # Initialize TimescaleDB features if available
+    try:
+        from app.core.timescaledb import initialize_timescaledb
+
+        await initialize_timescaledb()
+    except Exception as e:
+        logger.warning(f"TimescaleDB initialization skipped: {e}")
+
     logger.info("Database initialized successfully")
 
 

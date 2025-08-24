@@ -261,16 +261,57 @@ class SETProvider(IDataProvider):
                 return AssetInfo(
                     symbol=symbol.upper(),
                     name=symbol_data.get("name_th", symbol_data.get("name_en", symbol)),
-                    asset_class="stock",
+                    asset_type="stock",
                     exchange="SET",
                     base_currency="THB",
                     quote_currency="THB",
-                    min_order_size=Decimal(str(symbol_data.get("min_order_size", 1))),
-                    max_order_size=None,  # SET doesn't typically have max order size
-                    price_precision=2,  # Thai stocks typically use 2 decimal places
-                    quantity_precision=0,  # Shares are whole numbers
-                    is_active=symbol_data.get("is_active", True),
                 )
+
+            except httpx.TimeoutException:
+                raise DataProviderError("Request timeout") from None
+            except httpx.NetworkError as e:
+                raise DataProviderError(f"Network error: {e}") from e
+            except Exception as e:
+                if isinstance(e, DataProviderError | RateLimitError):
+                    raise
+                raise DataProviderError(f"Unexpected error: {e}") from e
+
+        return await self._make_request_with_retry(_fetch)
+
+    async def fetch_current_price(self, symbol: str) -> float:
+        """Fetch current price for a symbol from SET API."""
+
+        async def _fetch() -> float:
+            try:
+                # Make API request for current price
+                url = f"{self.base_url}/api/market/price/{symbol.upper()}"
+                response = await self.client.get(url, headers=self._get_headers())
+
+                if response.status_code == 429:
+                    retry_after = float(response.headers.get("Retry-After", 60))
+                    raise RateLimitError("Rate limit exceeded", retry_after)
+
+                if response.status_code == 404:
+                    raise DataProviderError(f"Symbol {symbol} not found")
+
+                if response.status_code != 200:
+                    raise DataProviderError(
+                        f"API request failed: {response.status_code}"
+                    )
+
+                data = response.json()
+
+                if not data.get("success", True):
+                    error_msg = data.get("message", "Unknown API error")
+                    raise DataProviderError(f"SET API error: {error_msg}")
+
+                price_data = data.get("data", {})
+                current_price = price_data.get("last_price")
+
+                if current_price is None:
+                    raise DataProviderError("No price data available")
+
+                return float(current_price)
 
             except httpx.TimeoutException:
                 raise DataProviderError("Request timeout") from None

@@ -200,23 +200,46 @@ class CCXTProvider(IDataProvider):
                 return AssetInfo(
                     symbol=symbol,
                     name=market.get("id", symbol),
-                    asset_class="crypto",
+                    asset_type="crypto",
                     exchange=self.exchange_name,
                     base_currency=market.get("base"),
                     quote_currency=market.get("quote"),
-                    min_order_size=Decimal(
-                        str(market.get("limits", {}).get("amount", {}).get("min", 0))
-                    ),
-                    max_order_size=Decimal(
-                        str(market.get("limits", {}).get("amount", {}).get("max", 0))
-                    )
-                    if market.get("limits", {}).get("amount", {}).get("max")
-                    else None,
-                    price_precision=market.get("precision", {}).get("price"),
-                    quantity_precision=market.get("precision", {}).get("amount"),
-                    is_active=market.get("active", True),
                 )
 
+            except ccxt.NetworkError as e:
+                raise DataProviderError(f"Network error: {e}") from e
+            except ccxt.ExchangeError as e:
+                raise DataProviderError(f"Exchange error: {e}") from e
+            except Exception as e:
+                raise DataProviderError(f"Unexpected error: {e}") from e
+
+        return await self._make_request_with_retry(_fetch)
+
+    async def fetch_current_price(self, symbol: str) -> float:
+        """Fetch current price for a symbol from exchange."""
+
+        async def _fetch() -> float:
+            try:
+                # Load markets if not already loaded
+                if not self.exchange.markets:
+                    await self.exchange.load_markets()
+
+                if symbol not in self.exchange.markets:
+                    raise DataProviderError(
+                        f"Symbol {symbol} not found on {self.exchange_name}"
+                    )
+
+                # Fetch current ticker
+                ticker = await self.exchange.fetch_ticker(symbol)
+                current_price = ticker.get("last")
+
+                if current_price is None:
+                    raise DataProviderError("No price data available")
+
+                return float(current_price)
+
+            except ccxt.RateLimitExceeded as e:
+                raise RateLimitError(f"Rate limit exceeded: {e}") from e
             except ccxt.NetworkError as e:
                 raise DataProviderError(f"Network error: {e}") from e
             except ccxt.ExchangeError as e:
